@@ -185,10 +185,24 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+-- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+-- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+-- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<M-,>', '<C-w>5<', { desc = 'Resize split (broader horizontal)' })
+vim.keymap.set('n', '<M-.>', '<C-w>5>', { desc = 'Resize split (slimmer horizontal)' })
+vim.keymap.set('n', '<M-t>', '<C-W>+', { desc = 'Resize split (taller vertical)' })
+vim.keymap.set('n', '<M-s>', '<C-W>-', { desc = 'Resize split (shorter vertical)' })
+
+-- Move lines/selections up and down
+vim.keymap.set('n', '<C-j>', ':m .+1<CR>')
+vim.keymap.set('n', '<C-k>', ':m .-2<CR>')
+vim.keymap.set('v', '<C-j>', ":m '>+1<CR>gv")
+vim.keymap.set('v', '<C-k>', ":m '<-2<CR>gv")
+
+-- yank current file + line to system clipboard
+vim.keymap.set('n', 'cp', ':let @+ = expand("%")<CR>')
+vim.keymap.set('n', 'cl', ':let @+ = expand("%") . ":" . line(".")<CR>')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -227,6 +241,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-projectionist', -- Alternate file pair navigation
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -697,6 +712,7 @@ require('lazy').setup({
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
     },
     config = function()
@@ -768,6 +784,7 @@ require('lazy').setup({
         sources = {
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
+          { name = 'buffer' },
           { name = 'path' },
         },
       }
