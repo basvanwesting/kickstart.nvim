@@ -204,6 +204,15 @@ vim.keymap.set('v', '<C-k>', ":m '<-2<CR>gv")
 vim.keymap.set('n', 'cp', ':let @+ = expand("%")<CR>')
 vim.keymap.set('n', 'cl', ':let @+ = expand("%") . ":" . line(".")<CR>')
 
+-- down one visual line, not one newline
+vim.keymap.set('n', 'j', 'gj')
+vim.keymap.set('n', 'k', 'gk')
+-- reselect after indent
+vim.keymap.set('v', '<', '<gv')
+vim.keymap.set('v', '>', '>gv')
+-- stay on first match
+vim.keymap.set('n', '*', 'g*``')
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -397,6 +406,20 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      -- Find Files with custom root
+      vim.keymap.set('n', '<leader>sF', function()
+        vim.ui.input({ prompt = 'Enter root path: ', completion = 'dir' }, function(path)
+          builtin.find_files { prompt_title = 'Find Files in ' .. path, cwd = path }
+        end)
+      end, { desc = '[S]earch by [F]iles (custom root)' })
+
+      -- Live Grep with custom root
+      vim.keymap.set('n', '<leader>sG', function()
+        vim.ui.input({ prompt = 'Enter root path: ', completion = 'dir' }, function(path)
+          builtin.live_grep { prompt_title = 'Live Grep in ' .. path, cwd = path }
+        end)
+      end, { desc = '[S]earch by [G]rep (custom root)' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
