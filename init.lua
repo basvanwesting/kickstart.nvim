@@ -610,8 +610,10 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        ruby_lsp = {},
-        rust_analyzer = {},
+        ruby_lsp = {
+          cmd = { vim.fs.normalize '~/.asdf/shims/ruby-lsp' },
+        },
+        -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -666,6 +668,12 @@ require('lazy').setup({
         },
       }
     end,
+  },
+
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^4', -- Recommended
+    lazy = false, -- This plugin is already lazy
   },
 
   { -- Autoformat
@@ -1020,9 +1028,11 @@ require('lazy').setup({
       'olimorris/neotest-rspec',
     },
     config = function()
+      ---@diagnostic disable-next-line: missing-fields
       require('neotest').setup {
         adapters = {
           require 'neotest-rspec',
+          require 'rustaceanvim.neotest',
         },
       }
     end,
