@@ -327,6 +327,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       require('which-key').register {
+        ['<leader>a'] = { name = '[A]I CopilotChat', _ = 'which_key_ignore' },
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
@@ -429,6 +430,23 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      -- Show help actions with telescope
+      vim.keymap.set({ 'n', 'v' }, '<leader>ad', function()
+        local actions = require 'CopilotChat.actions'
+        local help = actions.help_actions()
+        if not help then
+          vim.print 'No diagnostics found on the current line'
+          return
+        end
+        require('CopilotChat.integrations.telescope').pick(help)
+      end, { desc = 'Diagnostic Help (CopilotChat)' })
+
+      -- Show prompts actions with telescope
+      vim.keymap.set({ 'n', 'v' }, '<leader>ap', function()
+        local actions = require 'CopilotChat.actions'
+        require('CopilotChat.integrations.telescope').pick(actions.prompt_actions())
+      end, { desc = 'Prompt Actions (CopilotChat)' })
 
       -- Find Files with custom root
       vim.keymap.set('n', '<leader>sF', function()
@@ -760,6 +778,22 @@ require('lazy').setup({
           -- },
         },
       },
+      {
+        'zbirenbaum/copilot-cmp',
+        dependencies = 'copilot.lua',
+        opts = {},
+        config = function(_, opts)
+          local copilot_cmp = require 'copilot_cmp'
+          copilot_cmp.setup(opts)
+          -- attach cmp source whenever copilot attaches
+          -- fixes lazy-loading issues with the copilot cmp source
+          -- LazyVim.lsp.on_attach(function(client)
+          --   if client.name == 'copilot' then
+          --     copilot_cmp._on_insert_enter {}
+          --   end
+          -- end)
+        end,
+      },
       'saadparwaiz1/cmp_luasnip',
 
       -- Adds other completion capabilities.
@@ -840,6 +874,7 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'buffer' },
           { name = 'path' },
+          { name = 'copilot', group_index = 1, priority = 100 },
         },
       }
     end,
@@ -1054,6 +1089,72 @@ require('lazy').setup({
           require 'rustaceanvim.neotest',
         },
       }
+    end,
+  },
+
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = 'Copilot',
+    build = ':Copilot auth',
+    opts = {
+      suggestion = { enabled = false },
+      panel = { enabled = false },
+      filetypes = {
+        markdown = true,
+        help = true,
+      },
+    },
+  },
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    branch = 'canary',
+    cmd = 'CopilotChat',
+    opts = {
+      model = 'gpt-4',
+      auto_insert_mode = true,
+      window = {
+        width = 0.4,
+      },
+      selection = function(source)
+        local select = require 'CopilotChat.select'
+        return select.visual(source) or select.buffer(source)
+      end,
+    },
+    keys = {
+      {
+        '<leader>aa',
+        function()
+          return require('CopilotChat').toggle()
+        end,
+        desc = 'Toggle (CopilotChat)',
+      },
+      {
+        '<leader>ax',
+        function()
+          return require('CopilotChat').clear()
+        end,
+        desc = 'Clear (CopilotChat)',
+      },
+      {
+        '<leader>aq',
+        function()
+          local input = vim.fn.input 'Quick Chat: '
+          if input ~= '' then
+            require('CopilotChat').ask(input, { selection = require('CopilotChat.select').buffer })
+          end
+        end,
+        desc = 'Quick Chat (CopilotChat)',
+      },
+    },
+    config = function(_, opts)
+      vim.api.nvim_create_autocmd('BufEnter', {
+        pattern = 'copilot-chat',
+        callback = function()
+          vim.opt_local.relativenumber = false
+          vim.opt_local.number = false
+        end,
+      })
+      require('CopilotChat').setup(opts)
     end,
   },
 
