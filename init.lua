@@ -98,6 +98,8 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+vim.g.ruby_host_prog = '~/.asdf/shims/neovim-ruby-host'
+
 -- Make line numbers default
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
@@ -154,6 +156,9 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Start no-wrapped
+vim.opt.wrap = false
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -166,6 +171,10 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+-- Quickfix keymaps
+vim.keymap.set('n', '[q', ':cprev<CR>')
+vim.keymap.set('n', ']q', ':cnext<CR>')
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -212,9 +221,18 @@ vim.keymap.set('v', '<', '<gv')
 vim.keymap.set('v', '>', '>gv')
 -- stay on first match
 vim.keymap.set('n', '*', 'g*``')
+-- select whole file
+vim.keymap.set('n', 'VV', 'ggVG')
 
 -- set text wrapping toggles
 vim.keymap.set('n', '<leader>Tw', ':set invwrap<CR>:set wrap?<CR>', { desc = '[T]oggle [W]rap' })
+
+-- common typos
+vim.api.nvim_create_user_command('Wa', 'wa', {})
+vim.api.nvim_create_user_command('Wq', 'wq', {})
+vim.api.nvim_create_user_command('W', 'w', {})
+vim.api.nvim_create_user_command('Q', 'q', {})
+vim.api.nvim_create_user_command('Qa', 'qa', {})
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -254,6 +272,7 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-projectionist', -- Alternate file pair navigation
+  'tpope/vim-abolish', -- Alternate file pair navigation
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
