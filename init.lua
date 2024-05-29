@@ -327,7 +327,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       require('which-key').register {
-        ['<leader>a'] = { name = '[A]I CopilotChat', _ = 'which_key_ignore' },
+        ['<leader>a'] = { name = '[A]I CopilotChat', _ = 'which_key_ignore', mode = { 'n', 'v' } },
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
@@ -781,17 +781,8 @@ require('lazy').setup({
       {
         'zbirenbaum/copilot-cmp',
         dependencies = 'copilot.lua',
-        opts = {},
-        config = function(_, opts)
-          local copilot_cmp = require 'copilot_cmp'
-          copilot_cmp.setup(opts)
-          -- attach cmp source whenever copilot attaches
-          -- fixes lazy-loading issues with the copilot cmp source
-          -- LazyVim.lsp.on_attach(function(client)
-          --   if client.name == 'copilot' then
-          --     copilot_cmp._on_insert_enter {}
-          --   end
-          -- end)
+        config = function()
+          require('copilot_cmp').setup()
         end,
       },
       'saadparwaiz1/cmp_luasnip',
@@ -874,7 +865,7 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'buffer' },
           { name = 'path' },
-          { name = 'copilot', group_index = 1, priority = 100 },
+          { name = 'copilot' },
         },
       }
     end,
@@ -1096,29 +1087,27 @@ require('lazy').setup({
     'zbirenbaum/copilot.lua',
     cmd = 'Copilot',
     build = ':Copilot auth',
-    opts = {
-      suggestion = { enabled = false },
-      panel = { enabled = false },
-      filetypes = {
-        markdown = true,
-        help = true,
-      },
-    },
+    event = 'InsertEnter',
+    config = function()
+      require('copilot').setup {
+        -- for copilot_cmp
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+        -- general
+        filetypes = {
+          markdown = true,
+          help = true,
+        },
+      }
+    end,
   },
   {
     'CopilotC-Nvim/CopilotChat.nvim',
     branch = 'canary',
-    cmd = 'CopilotChat',
-    opts = {
-      model = 'gpt-4',
-      auto_insert_mode = true,
-      window = {
-        width = 0.4,
-      },
-      selection = function(source)
-        local select = require 'CopilotChat.select'
-        return select.visual(source) or select.buffer(source)
-      end,
+    -- cmd = 'CopilotChat',
+    dependencies = {
+      { 'zbirenbaum/copilot.lua' },
+      { 'nvim-lua/plenary.nvim' },
     },
     keys = {
       {
@@ -1140,10 +1129,32 @@ require('lazy').setup({
         function()
           local input = vim.fn.input 'Quick Chat: '
           if input ~= '' then
+            require('CopilotChat').ask(input, { selection = require('CopilotChat.select').line })
+          end
+        end,
+        desc = 'Quick Chat on line (CopilotChat)',
+        mode = { 'n' },
+      },
+      {
+        '<leader>aq',
+        function()
+          local input = vim.fn.input 'Quick Chat: '
+          if input ~= '' then
+            require('CopilotChat').ask(input, { selection = require('CopilotChat.select').visual })
+          end
+        end,
+        desc = 'Quick Chat on visual (CopilotChat)',
+        mode = { 'v' },
+      },
+      {
+        '<leader>ab',
+        function()
+          local input = vim.fn.input 'Quick Chat: '
+          if input ~= '' then
             require('CopilotChat').ask(input, { selection = require('CopilotChat.select').buffer })
           end
         end,
-        desc = 'Quick Chat (CopilotChat)',
+        desc = 'Quick Chat on buffer (CopilotChat)',
       },
     },
     config = function(_, opts)
